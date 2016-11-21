@@ -3,7 +3,7 @@ module.exports = function (controller) {
     // Show the api of @turnio
     controller.hears(
 
-      ['help', 'help (.*)', '(.*) help (.*)'], 
+      ['help', 'help (.*)', '(.*) help (.*)', 'ayuda', 'ayuda (.*)', '(.*) ayuda (.*)'], 
 
       'direct_message,direct_mention,mention', 
 
@@ -14,7 +14,7 @@ module.exports = function (controller) {
     // Show users in the queue
     controller.hears(
       
-      ['cola','cola (.*)','(.*) cola (.*)','queue'], 
+      ['cola','cola (.*)','(.*) cola (.*)','queue', 'lista','lista (.*)','(.*) lista (.*)'], 
       
       'direct_message,direct_mention, mention', 
       
@@ -47,7 +47,7 @@ module.exports = function (controller) {
     // Delete all users in the queue
     controller.hears(
       
-      ['limpia','limpia (.*)','(.*) limpia (.*)'],
+      ['limpia','limpia (.*)','(.*) limpia (.*)', 'vacia','vacia (.*)','(.*) vacia (.*)'],
       
       'direct_message,direct_mention,mention', 
       
@@ -59,12 +59,13 @@ module.exports = function (controller) {
 
     function help(bot, message) {
        
-      const help = 'Hola '+ '<@'+ message.info +'>! Esta es mi API disponible: ' +'\n' + 
+      const help = 'Hola '+ '<@'+ message.user +'>! Esta es mi API disponible: ' +'\n' + 
             '> `add`  : Te agrega a la cola de turno para desplegar\n' +
             '> `cola` : Muestra la cola de usuarios\n' +
             '> `del`  : Te elimina de la cola\n' + 
             '> `limpia` : Limpia la cola de usuarios\n' +
-            '> `help` : Muestra la api del @turnio\n'; 
+            '> `help` : Muestra la api disponible\n' + 
+            'Mencioname con cualquiera de estos comandos. Ex: @turnio help. ¡Pruebalo tu mismo!'; 
 
        bot.reply(message, help);
 
@@ -78,8 +79,7 @@ module.exports = function (controller) {
             if (!queue || !queue.users || queue.users.length == 0) {
                 bot.reply(message, 'No hay nadie en la cola en este momento, Mencioname y añade la palabra clave `add` para añadirte. :D');                
             } else {
-                var text = 'La cola se componen de las siguientes personas: \n' + generateQueueList(queue.users);
-                bot.reply(message, text);
+                bot.reply(message, generateQueueList(queue.users));
             }
 
         });
@@ -104,6 +104,7 @@ module.exports = function (controller) {
                                      
             if(user){                
                 bot.reply(message, '<'+ user.name +'> ya estas dado de alta en la cola, cuando sea tu turno te avisare.');
+                bot.reply(message, generateQueueList(queue.users));
             } else {
                 
                 userInfo(bot.api, message.user, function (err, user) {
@@ -117,11 +118,14 @@ module.exports = function (controller) {
                         if (err) {
                             bot.reply(message, 'I experienced an error adding your task: ' + err);
                         } else {
+                            
                             bot.api.reactions.add({
                                 name: 'thumbsup',
                                 channel: message.channel,
                                 timestamp: message.ts
                             });
+
+                            bot.reply(message, generateQueueList(queue.users));
                         }
                     });
                 });
@@ -137,7 +141,7 @@ module.exports = function (controller) {
             }
             
             if (!queue || !queue.users || queue.users.length == 0 || findUser(queue.users,message.user) === undefined) {
-                bot.reply(message, 'No se ha podido realizar la eliminacion correctamente, esto se puede dar porque no estas en la cola o bien porque esta no se ha creado\n' + 
+                bot.reply(message, 'La cola no existe o no estas en ella.\n' + 
                                     'Para ver las personas en la cola, mencioname y añade la palabra clave `cola`.');                
             } else {
                                      
@@ -169,9 +173,7 @@ module.exports = function (controller) {
     function clean(bot, message) {
         
         controller.storage.teams.get('queue', function(err, queue) {
-            console.log('>> Q:', queue);
             if(err){
-                console.log('>> ERR:', err);
                 return throwError(err);
             }
             
@@ -200,13 +202,9 @@ module.exports = function (controller) {
 
     // (Async) get info user by id
     function userInfo(api, id, next){
-        console.log('>> USER INFO');
         api.users.info({
            user: id
         }, function (err, res) {
-            console.log('>> USER CB');
-            console.log(err);
-            console.log(res.user);
             next(err, res.user);
         });
     }
@@ -214,7 +212,7 @@ module.exports = function (controller) {
     // Generate list of users
     function generateQueueList(users) {
         
-        var text = '';
+        var text = 'La cola se componen de las siguientes personas: \n';
 
         users.forEach(function(user, i){                
             text = text + '> `' +  (i + 1) + 'º` ' +  user.name + '\n';            
@@ -228,10 +226,5 @@ module.exports = function (controller) {
         
         return users.find(function(user, i){ return (user.id === id);});                
     }
-
-
-
-
-
 
 };
