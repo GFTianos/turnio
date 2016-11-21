@@ -59,7 +59,7 @@ module.exports = function (controller) {
 
     function help(bot, message) {
        
-      const help = 'OLA K ASE, aqui tienes mi api primo\n' + 
+      const help = 'Hola '+ '<@'+ message.info +'>! Esta es mi API disponible: ' +'\n' + 
             '> `add`  : Te agrega a la cola de turno para desplegar\n' +
             '> `cola` : Muestra la cola de usuarios\n' +
             '> `del`  : Te elimina de la cola\n' + 
@@ -76,9 +76,9 @@ module.exports = function (controller) {
         controller.storage.teams.get('queue', function(err, queue) { 
             
             if (!queue || !queue.users || queue.users.length == 0) {
-                bot.reply(message, 'No hay nadie en la cola crack. Mencioname y di `add` para añadirte');                
+                bot.reply(message, 'No hay nadie en la cola en este momento, Mencioname y añade la palabra clave `add` para añadirte. :D');                
             } else {
-                var text = 'Esta es la peñita en la cola: \n' + generateQueueList(queue.users);
+                var text = 'La cola se componen de las siguientes personas: \n' + generateQueueList(queue.users);
                 bot.reply(message, text);
             }
 
@@ -88,12 +88,8 @@ module.exports = function (controller) {
 
     function add(bot, message) {
 
-        console.log('>> ADD:', message);
         controller.storage.teams.get('queue', function(err, queue) {
-            console.log('>> ERR:', err);
-            console.log('>> Q:', queue);
             if(err){
-                console.log('>> ERR:', err);
                 return throwError(err);
             }
 
@@ -107,7 +103,7 @@ module.exports = function (controller) {
             var user = findUser(queue.users,message.user);
                                      
             if(user){                
-                bot.reply(message, '<'+ user.name +'> iyoo m tah vasilando o k, ya tas en la cola...');
+                bot.reply(message, '<'+ user.name +'> ya estas dado de alta en la cola, cuando sea tu turno te avisare.');
             } else {
                 
                 userInfo(bot.api, message.user, function (err, user) {
@@ -135,18 +131,14 @@ module.exports = function (controller) {
   
     function del(bot, message) {
         
-        console.log('>> DEL:', message);
         controller.storage.teams.get('queue', function(err, queue) {
-            console.log('>> ERR:', err);
-            console.log('>> Q:', queue);
             if(err){
-                console.log('>> ERR:', err);
                 return throwError(err);
             }
             
             if (!queue || !queue.users || queue.users.length == 0 || findUser(queue.users,message.user) === undefined) {
-                bot.reply(message, 'Iyooooo k ase, o no estas en la cola o no hay cola... tu sabras\n' + 
-                                    'Para ver la cola, mencioname con `cola` ;)');                
+                bot.reply(message, 'No se ha podido realizar la eliminacion correctamente, esto se puede dar porque no estas en la cola o bien porque esta no se ha creado\n' + 
+                                    'Para ver las personas en la cola, mencioname y añade la palabra clave `cola`.');                
             } else {
                                      
                 queue.users = queue.users.filter(function(user){
@@ -165,7 +157,7 @@ module.exports = function (controller) {
 
                         if(queue.users && queue.users.length > 0){
 
-                            bot.reply(message, '<'+ queue.users[0].name +'> te toca niñ@!');
+                            bot.reply(message, '<'+ queue.users[0].name +'> es tu turno! cuando termines eliminate de la cola mencionandome y añade la palabra clave `del`. Gracias');
                         }
                     }
                 });                
@@ -176,9 +168,7 @@ module.exports = function (controller) {
 
     function clean(bot, message) {
         
-        console.log('>> DEL ALL:', message);
         controller.storage.teams.get('queue', function(err, queue) {
-            console.log('>> ERR:', err);
             console.log('>> Q:', queue);
             if(err){
                 console.log('>> ERR:', err);
@@ -186,7 +176,7 @@ module.exports = function (controller) {
             }
             
             if (!queue || !queue.users || queue.users.length == 0) {
-                bot.reply(message, 'Iyooooo k ase, aquí no hay nada q borrar está vacia...');                
+                bot.reply(message, 'No hay cola en este momento por lo tanto no se puede limpiar.');                
             } else {                
                 queue.users = [];                                          
                 controller.storage.teams.save(queue, function(err,saved) {

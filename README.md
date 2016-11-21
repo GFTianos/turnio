@@ -2,6 +2,30 @@
 
 Bot to manage a queue of slack users in a channel
 
+##TODO: 
+ 
+ - Support for differents queue like queue-release or queue-develop.
+ - Refactor of labels and support for i18n. 
+ - Change botkit-storage-firebase after this pull-request (https://github.com/howdyai/botkit-storage-firebase/pull/8) for correct integration
+ - After deploy maybe botkit-storage-firebase won't be necesary and we can use botkit-storage default. (Memory)
+
+##Install
+
+git clone https://github.com/GFTianos/turnio.git
+
+cd /turnio
+
+npm install
+
+replace the file node_modules/botkit-storage/src/index.js by https://github.com/nicobusch/botkit-storage-firebase/blob/master/src/index.js 
+
+replace the file node_modules/botkit-storage/package.json by https://github.com/nicobusch/botkit-storage-firebase/blob/master/src/index.js
+
+and run the command line with your slack-bot token:
+
+token=YOUR-SLACK-BOT-TOKEN node .
+
+
 # Botkit Studio Starter Kit
 
 This repo contains everything you need to get started building a bot with Botkit Studio!
